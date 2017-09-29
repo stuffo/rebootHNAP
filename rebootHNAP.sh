@@ -27,40 +27,40 @@ function getResult {
 }
 
 function hash_hmac {
-	data="$1"
-	key="$2"
-	echo -n "$data" | openssl dgst "-md5" -hmac "$key" -binary | xxd -ps -u
+    local data="$1"
+    local key="$2"
+    echo -n "$data" | openssl dgst "-md5" -hmac "$key" -binary | xxd -ps -u
 }
 
 function hnap_auth {
-	local method=$1
-	local timestamp=$(date +%s)
-	local auth_str="$timestamp\"$soapUrl$method\""
-	local auth=$(hash_hmac "$auth_str" "$privatekey")
-	echo "HNAP_AUTH: $auth $timestamp"
+    local method=$1
+    local timestamp=$(date +%s)
+    local auth_str="$timestamp\"$soapUrl$method\""
+    local auth=$(hash_hmac "$auth_str" "$privatekey")
+    echo "HNAP_AUTH: $auth $timestamp"
 }
 
 function soap_body {
-	local method=$1
-	local data=$2
-	echo "<$method xmlns=\"$soapUrl\">$data</$method>"
+    local method=$1
+    local data=$2
+    echo "<$method xmlns=\"$soapUrl\">$data</$method>"
 }
 
 function soap_call {
-	local soapAction=$1
-	local data=$2
-	local auth=$3
-	local authHeaders
+    local soapAction=$1
+    local data=$2
+    local auth=$3
+    local authHeaders
 
-	if [ "$auth" = "y" ] ; then
-		authHeaders=('-H' "$(hnap_auth $soapAction)")
-		authHeaders+=('-H' "$cookie")
-	fi 
+    if [ "$auth" = "y" ] ; then
+        authHeaders=('-H' "$(hnap_auth $soapAction)")
+        authHeaders+=('-H' "$cookie")
+    fi 
 
-	curl -s -S -f --connect-timeout 3 -s -X POST -H "$contentType" \
-		-H "SOAPAction: \"$soapUrl$soapAction\"" \
+    curl -s -S -f --connect-timeout 3 -s -X POST -H "$contentType" \
+        -H "SOAPAction: \"$soapUrl$soapAction\"" \
         "${authHeaders[@]}" --data-binary "$soapHead$(soap_body $soapAction $data)$soapTail" \
-		http://$IP/HNAP1/ 
+        http://$IP/HNAP1/ 
 }
 
 function soap_get_result {
