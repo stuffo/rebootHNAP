@@ -88,7 +88,7 @@ if [ "$ret" != "success" ] ; then
     exit 1
 fi
 
-#ret=$(soap_get_result Reboot "</empty>" y)
+ret=$(soap_get_result Reboot "</empty>" y)
 echo "Reboot Result: $ret"
 if [ "$ret" == "REBOOT" ] ; then
     echo "Reboot success"
